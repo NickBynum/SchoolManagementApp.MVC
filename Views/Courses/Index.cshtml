@@ -7,9 +7,9 @@
 <h1>Index</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a class="btn btn-success" asp-action="Create">Create New</a>
 </p>
-<table class="table table-dark">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>
@@ -19,7 +19,7 @@
                 @Html.DisplayNameFor(model => model.Code)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Credots)
+                @Html.DisplayNameFor(model => model.Credits)
             </th>
             <th></th>
         </tr>
@@ -35,14 +35,37 @@
                     @Html.DisplayFor(modelItem => item.Code)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.Credots)
+                    @Html.DisplayFor(modelItem => item.Credits)
                 </td>
                 <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                    <a class="btn btn-primary" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                    <button data-id="@item.Id" class="btn btn-danger deleteBtn" type="button">Delete</button>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+
+<form asp-action="Delete" id="courseDeleteForm">
+    <input type="hidden" id="courseid" name="Id" />
+</form>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $(document).ready( function () {
+                $('.table').DataTable();
+            } );
+
+            $('.deleteBtn').click(function (e) {
+                if (confirm("Are you sure you want to delete this?") == true) {
+                    var btn = $(this);
+                    var id = btn.data("id");
+                    $('#courseid').val(id);
+                    $('#courseDeleteForm').submit();
+                }
+            })
+        })
+    </script>
+}

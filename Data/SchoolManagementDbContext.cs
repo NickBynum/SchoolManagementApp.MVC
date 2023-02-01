@@ -6,40 +6,64 @@ namespace SchoolManagementApp.MVC.Data;
 
 public partial class SchoolManagementDbContext : DbContext
 {
-    public SchoolManagementDbContext()
-    {
-    }
-
     public SchoolManagementDbContext(DbContextOptions<SchoolManagementDbContext> options)
         : base(options)
     {
     }
 
+    public virtual DbSet<Class> Classes { get; set; }
+
     public virtual DbSet<Course> Courses { get; set; }
+
+    public virtual DbSet<Enrollment> Enrollments { get; set; }
 
     public virtual DbSet<Lecturer> Lecturers { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost, 1400;Database=SchoolManagementDb;Trusted_Connection=false;MultipleActiveResultSets=true;Encrypt=false;user id=sa;password=St0ngPa$$w0rd");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Class>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Classes__3214EC0706893E5C");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.Classes)
+                .HasForeignKey(d => d.CourseId)
+                .HasConstraintName("FK__Classes__CourseI__4CA06362");
+
+            entity.HasOne(d => d.Lecturer).WithMany(p => p.Classes)
+                .HasForeignKey(d => d.LecturerId)
+                .HasConstraintName("FK__Classes__Lecture__4BAC3F29");
+        });
+
         modelBuilder.Entity<Course>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Courses__3214EC073CDAB2BB");
+            entity.HasKey(e => e.Id).HasName("PK__Courses__3214EC07B740B343");
 
-            entity.HasIndex(e => e.Code, "UQ__Courses__A25C5AA79BBABEA2").IsUnique();
+            entity.HasIndex(e => e.Code, "UQ__Courses__A25C5AA7A48C0AE5").IsUnique();
 
             entity.Property(e => e.Code).HasMaxLength(5);
             entity.Property(e => e.Name).HasMaxLength(50);
         });
 
+        modelBuilder.Entity<Enrollment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Enrollme__3214EC07B7BAD349");
+
+            entity.Property(e => e.Grade).HasMaxLength(2);
+
+            entity.HasOne(d => d.Class).WithMany(p => p.Enrollments)
+                .HasForeignKey(d => d.ClassId)
+                .HasConstraintName("FK__Enrollmen__Class__5070F446");
+
+            entity.HasOne(d => d.Student).WithMany(p => p.Enrollments)
+                .HasForeignKey(d => d.StudentId)
+                .HasConstraintName("FK__Enrollmen__Stude__4F7CD00D");
+        });
+
         modelBuilder.Entity<Lecturer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Lecturer__3214EC076533B37C");
+            entity.HasKey(e => e.Id).HasName("PK__Lecturer__3214EC07BFDCA79A");
 
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.LastName).HasMaxLength(50);
@@ -47,7 +71,7 @@ public partial class SchoolManagementDbContext : DbContext
 
         modelBuilder.Entity<Student>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Students__3214EC07D376FA60");
+            entity.HasKey(e => e.Id).HasName("PK__Students__3214EC07D5002669");
 
             entity.Property(e => e.DateOfBirth).HasColumnType("date");
             entity.Property(e => e.FirstName).HasMaxLength(50);
