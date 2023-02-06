@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementApp.MVC.Data;
+using SchoolManagementApp.MVC.Models;
 
 namespace SchoolManagementApp.MVC.Controllers
 {
@@ -160,6 +161,45 @@ namespace SchoolManagementApp.MVC.Controllers
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<ActionResult> ManageEnrollments(int id)
+        {
+            var @class = await _context.Classes
+                .Include(q => q.Course)
+                .Include(q => q.Lecturer)
+                .Include(q => q.Enrollments)
+                    .ThenInclude(q => q.Student)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            var students = await _context.Students.ToListAsync();
+
+            var model = new ClassEnrollmentViewModel();
+            model.Class= @class;
+
+            foreach (var student in students)
+            {
+                model.Students.Add(new StudentEnrollmentViewModel {
+                    Id = student.Id,
+                    FirstName = student.FirstName,
+                    LastName = student.LastName,
+                    IsEnrolled = (@class.Enrollments?.Any(q => q.StudentId == student.Id))
+                        .GetValueOrDefault()
+                });
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EnrollStudent(int classId, int studentId, bool shouldEnroll)
+        {
+            var enrollment = new Enrollment();
+            if(shouldEnroll == true)
+            {
+                enrollment.Id = classId;
+                enrollment.StudentId = studentId;
+            }
         }
 
         private bool ClassExists(int id)

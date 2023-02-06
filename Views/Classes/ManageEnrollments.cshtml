@@ -1,0 +1,71 @@
+@model SchoolManagementApp.MVC.Models.ClassEnrollmentViewModel
+
+@{
+    ViewData["Title"] = "Manage Enrollments";
+}
+
+<h2>Manage Enrollments for @Model.Class.Time Session of @Model.Class.Course.Code - @Model.Class.Course.Name</h2>
+<h3>Instructor: @Model.Class.Lecturer.FirstName @Model.Class.Lecturer.LastName</h3>
+
+    <hr />
+
+<h3>Student List</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model.Students)
+        {
+            <tr>
+                <td>@student.FirstName</td>
+                <td>@student.LastName</td>
+                <td>
+@*                    @if (student.IsEnrolled) {
+                        <button class="btn btn-danger enrollmentBtn" data-shouldEnroll="false" data-studentId="@student.Id" type="button">Remove</button>
+                    } else{    
+                    <button class="btn btn-success enrollmentBtn" data-shouldEnroll="true" data-studentId="@student.Id" type="button">Add</button>
+                    }*@
+
+                    @{
+                        string btnText = student.IsEnrolled ? "Remove" : "Add";
+                        string btnClass = student.IsEnrolled ? "Danger" : "Success";
+                        bool shouldEnroll = !student.IsEnrolled;
+                    }
+                    <button class="btn @btnClass enrollmentBtn" data-shouldEnroll=@shouldEnroll data-studentId="@student.Id" type="button">@btnText</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form asp-action="EnrollStudent" id="classEnrollmentForm">
+    <input type="hidden" id="classId" name="ClassId" value="@Model.Class.Id" />
+    <input type="hidden" id="studentId" name="StudentId" />
+    <input type="hidden" id="shouldEnroll" name="ShouldEnroll" />
+</form>
+
+@section Scripts {
+        <script>
+            $(function () {
+                $(document).ready( function () {
+                    $('.table').DataTable();
+                } );
+
+                $('.enrollmentBtn').click(function (e) {
+                    if (confirm("Are you sure you want to proeed with this?") == true) {
+                        var btn = $(this);
+                        var studentId = btn.attr("data-studentId");
+                        var shouldEnroll = btn.attr("data-shouldEnroll");
+                        $('#studentId').val(studentId);
+                        $('#shouldEnroll').val(shouldEnroll);
+                        $('#classEnrollmentForm').submit();
+                    }
+                })
+            })
+        </script>
+    }
