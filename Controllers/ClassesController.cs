@@ -163,19 +163,25 @@ namespace SchoolManagementApp.MVC.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<ActionResult> ManageEnrollments(int id)
+        public async Task<ActionResult> ManageEnrollments(int classId)
         {
             var @class = await _context.Classes
                 .Include(q => q.Course)
                 .Include(q => q.Lecturer)
                 .Include(q => q.Enrollments)
                     .ThenInclude(q => q.Student)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == classId);
 
             var students = await _context.Students.ToListAsync();
 
             var model = new ClassEnrollmentViewModel();
-            model.Class= @class;
+            model.Class = new ClassViewModel
+            {
+                Id = @class.Id,
+                CourseName = $"{@class.Course.Code} - {@class.Course.Name}",
+                LecturerName = $"{@class.Lecturer.FirstName} {@class.Lecturer.LastName}",
+                Time = @class.Time.ToString()
+            };
 
             foreach (var student in students)
             {
@@ -195,11 +201,24 @@ namespace SchoolManagementApp.MVC.Controllers
         public async Task<ActionResult> EnrollStudent(int classId, int studentId, bool shouldEnroll)
         {
             var enrollment = new Enrollment();
-            if(shouldEnroll == true)
+            if(shouldEnroll)
             {
-                enrollment.Id = classId;
+                enrollment.ClassId = classId;
                 enrollment.StudentId = studentId;
+                await _context.AddAsync(enrollment);
             }
+            else
+            {
+                enrollment = await _context.Enrollments.FirstOrDefaultAsync(
+                    q => q.ClassId == classId && q.StudentId == studentId);
+
+                if(enrollment != null)
+                {
+                    _context.Remove(enrollment);
+                }
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ManageEnrollments), new {classId = classId});
         }
 
         private bool ClassExists(int id)

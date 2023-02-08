@@ -4,8 +4,8 @@
     ViewData["Title"] = "Manage Enrollments";
 }
 
-<h2>Manage Enrollments for @Model.Class.Time Session of @Model.Class.Course.Code - @Model.Class.Course.Name</h2>
-<h3>Instructor: @Model.Class.Lecturer.FirstName @Model.Class.Lecturer.LastName</h3>
+<h2>Manage Enrollments for @Model.Class.Time Session of @Model.Class.CourseName</h2>
+<h3>Instructor: @Model.Class.LecturerName</h3>
 
     <hr />
 
@@ -57,7 +57,7 @@
                 } );
 
                 $('.enrollmentBtn').click(function (e) {
-                    if (confirm("Are you sure you want to proeed with this?") == true) {
+                    if (confirm("Are you sure you want to proceed with this?") == true) {
                         var btn = $(this);
                         var studentId = btn.attr("data-studentId");
                         var shouldEnroll = btn.attr("data-shouldEnroll");
